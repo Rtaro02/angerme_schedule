@@ -15,7 +15,7 @@ const angermeMemberList = [
    /相川茉穂/,
    /佐々木莉佳子/,
    /上國料萌衣/,
-   /笠原桃奈/,
+   /笠原/,
    /船木結/,
    /川村文乃/,
    /太田遥香/,
@@ -23,7 +23,10 @@ const angermeMemberList = [
    /橋迫鈴/,
    /川名凜/,
    /為永幸音/,
-   /松本わかな/
+   /松本わかな/,
+   /平山遊季/,
+   /下井谷幸穂/,
+   /後藤花/
 ]
 
 const angerme_join_exit = [
@@ -38,17 +41,20 @@ const angerme_join_exit = [
     { "name": "田村芽実", "join_date": new Date(2011, 8,14), "exit_date": new Date(2016, 5, 30)},
     { "name": "室田瑞希", "join_date": new Date(2014, 10, 4), "exit_date": new Date(2020, 3, 22)},
     { "name": "相川茉穂", "join_date": new Date(2014, 10, 4), "exit_date": new Date(2017, 1, 11)}, // 休業開始日をExit日とする
-    { "name": "佐々木莉佳子", "join_date": new Date(2014, 10, 4), "exit_date": new Date(2099, 12, 31)},
+    { "name": "佐々木莉佳子", "join_date": new Date(2014, 10, 4), "exit_date": new Date(2024, 06, 16)},
     { "name": "上國料萌衣", "join_date": new Date(2015, 11, 11), "exit_date": new Date(2099, 12, 31)},
-    { "name": "笠原桃奈", "join_date": new Date(2016, 7, 16), "exit_date": new Date(2099, 12, 31)},
+    { "name": "笠原", "join_date": new Date(2016, 7, 16), "exit_date": new Date(2021, 11, 15)},
     { "name": "船木結", "join_date": new Date(2017, 6, 26), "exit_date": new Date(2020, 12, 9)},
-    { "name": "川村文乃", "join_date": new Date(2017, 6, 26), "exit_date": new Date(2099, 12, 31)},
+    { "name": "川村文乃", "join_date": new Date(2017, 6, 26), "exit_date": new Date(2024, 11, 28)},
     { "name": "太田遥香", "join_date": new Date(2018, 11, 23), "exit_date": new Date(2020, 2, 28)}, // 休業開始日をExit日とする
     { "name": "伊勢鈴蘭", "join_date": new Date(2018, 11, 23), "exit_date": new Date(2099, 12, 31)},
     { "name": "橋迫鈴", "join_date": new Date(2019, 9, 25), "exit_date": new Date(2099, 12, 31)}, // 本当の加入日は2019/7/3だがパフォーマン開始日を加入日とする
-    { "name": "川名凜", "join_date": new Date(2009, 11, 2), "exit_date": new Date(2099, 12, 31)},
-    { "name": "為永幸音", "join_date": new Date(2009, 11, 2), "exit_date": new Date(2099, 12, 31)},
-    { "name": "松本わかな", "join_date": new Date(2009, 11, 2), "exit_date": new Date(2099, 12, 31)}
+    { "name": "川名凜", "join_date": new Date(2020, 11, 2), "exit_date": new Date(2099, 12, 31)},
+    { "name": "為永幸音", "join_date": new Date(2020, 11, 2), "exit_date": new Date(2099, 12, 31)},
+    { "name": "松本わかな", "join_date": new Date(2020, 11, 2), "exit_date": new Date(2099, 12, 31)},
+    { "name": "平山遊季", "join_date": new Date(2021, 12, 30), "exit_date": new Date(2099, 12, 31)},
+    { "name": "後藤花", "join_date": new Date(2023, 5, 23), "exit_date": new Date(2099, 12, 31)},
+    { "name": "下井谷幸穂", "join_date": new Date(2023, 5, 23), "exit_date": new Date(2099, 12, 31)},
 ]
 
 const angermeList = [
@@ -60,9 +66,11 @@ function checkAngerme(x) {
   for(var tl of angermeList) {
     if(tl.test(x)) return true;
   }
-  for(var tl of angermeMemberList) {
-    if(tl.test(x)) return true;
-  }
+  // Check only momona
+  // for(var tl of angermeMemberList) {
+  //   if(tl.test(x)) return true;
+  // }
+  if(/笠原桃奈/.test(x)) return true;
   return false;
 }
 
@@ -110,21 +118,30 @@ async function fetch(year, month) {
         var day = column[1].replace(/^.*>([0-9]+)<\/A.*$/, '$1');
         var events = column[4].split("<BR>");
         for(var event of events) {
-            if(!/color:#000000/.test(event)){
+            // if(!/color:#000000/.test(event)){
+            //     continue;
+            // }
+            if(!/場所/.test(event)){
                 continue;
             }
             event = event.replace(/<[^>]+>/g, '');
             if(checkAngerme(event)) {
                 var date = new Date(year, month, day)
-                var output = year + "/" + month + "/" + day + "," + event;
+                var regex = /^.*場所：([^・]+)・(.*)$/
+                var place = event.replace(regex, '$1');
+                var hako = event.replace(regex, '$2');
+                // var output = year + "/" + month + "/" + day + "," +  + event;
+                var output = `${year}/${month}/${day},${place},${hako},${event}`
                 // If Angerme exlusive concert expression is used.
-                if(/／アンジュルム/.test(event)) {
+                // if(/／アンジュルム/.test(event)) {
+                if(/アンジュルム/.test(event)) {
                     output = output + addAngermeSignal(date);
                     console.log(output)
                 } else {
                     for(member of angermeMemberList) {
                        output = output + addSignal(event, member);
                     }
+                    console.log(output)
                 }
             }
         }
@@ -133,8 +150,20 @@ async function fetch(year, month) {
 
 
 async function run() {
-    console.log("DATE,CONTENT," + angermeMemberList.join(",").toString().replace(/\//g, ''));
-    for(year of [2021, 2020, 2019, 2018, 2017, 2016, 2015]) {
+    console.log(`DATE,PREFECTURE,PLACE,CONTENT,${angermeMemberList.join(",").toString().replace(/\//g, '')}`);
+    for(year of [
+            2025,
+            2024,
+            2023,
+            2022,
+            2021,
+            2020,
+            2019,
+            2018,
+            2017,
+            2016,
+            2015
+        ]) {
         for(month of [12,11,10,9,8,7,6,5,4,3,2,1]) {
             await fetch(year, month);
         }
