@@ -66,10 +66,7 @@ function checkAngerme(x) {
   for(const tl of angermeList) {
     if(tl.test(x)) return true;
   }
-  // Check only momona
-  // for(var tl of angermeMemberList) {
-  //   if(tl.test(x)) return true;
-  // }
+  
   if(/笠原桃奈/.test(x)) return true;
   return false;
 }
@@ -110,9 +107,7 @@ async function fetch(year, month) {
         const day = column[1].replace(/^.*>([0-9]+)<\/A.*$/, '$1');
         const events = column[4].split("<BR>");
         for(let event of events) {
-            // if(!/color:#000000/.test(event)){
-            //     continue;
-            // }
+            
             if(!/場所/.test(event)){
                 continue;
             }
@@ -122,10 +117,9 @@ async function fetch(year, month) {
                 const regex = /^.*場所：([^・]+)・(.*)$/
                 const place = event.replace(regex, '$1');
                 const hako = event.replace(regex, '$2');
-                // var output = year + "/" + month + "/" + day + "," +  + event;
+                
                 let output = `${year}/${month}/${day},${place},${hako},${event}`
-                // If Angerme exlusive concert expression is used.
-                // if(/／アンジュルム/.test(event)) {
+                
                 if(/アンジュルム/.test(event)) {
                     output = output + addAngermeSignal(date);
                     console.log(output)
