@@ -1,5 +1,5 @@
 const { join } = require('path');
-const request = require('request');
+const axios = require('axios');
 
 const angermeMemberList = [
    /和田彩花/,
@@ -63,7 +63,7 @@ const angermeList = [
  ]
 
 function checkAngerme(x) {
-  for(var tl of angermeList) {
+  for(const tl of angermeList) {
     if(tl.test(x)) return true;
   }
   // Check only momona
@@ -80,8 +80,8 @@ function addSignal(x, member) {
 }
 
 function addAngermeSignal(date) {
-    var text = "";
-    for(member of angerme_join_exit) {
+    let text = "";
+    for(const member of angerme_join_exit) {
         if(date.getTime() < member.join_date.getTime()) {
             text = text + ",x";
         } else if(member.exit_date.getTime() < date.getTime()) {
@@ -94,30 +94,22 @@ function addAngermeSignal(date) {
 }
 
 function doRequest(url) {
-  return new Promise(function (resolve, reject) {
-    request(url, function (error, res, body) {
-      if (!error && res.statusCode == 200) {
-        resolve(body);
-      } else {
-        reject(error);
-      }
-    });
-  });
+  return axios.get(url).then(res => res.data);
 }
 
 async function fetch(year, month) {
-    var url = "https://sayum.in/cgi/webcal/webcal.php?year=" + year + "&mon=" + month;
-    var result = (await doRequest(url))
+    const url = "https://sayum.in/cgi/webcal/webcal.php?year=" + year + "&mon=" + month;
+    const result = (await doRequest(url))
     .replace(/\n/g, '')
     .replace(/^.*<TABLE(.*)<\/TABLE>.*$/, '$1')
     .replace(/<TD[^>]+>/g, '<TD>');
-    var day_rows = result.split('<TR>');
-    for(var day_row of day_rows) {
-        var column = day_row.split('<TD>')
+    const day_rows = result.split('<TR>');
+    for(const day_row of day_rows) {
+        const column = day_row.split('<TD>')
         if(column.length != 5) continue; // Length should be 5. 
-        var day = column[1].replace(/^.*>([0-9]+)<\/A.*$/, '$1');
-        var events = column[4].split("<BR>");
-        for(var event of events) {
+        const day = column[1].replace(/^.*>([0-9]+)<\/A.*$/, '$1');
+        const events = column[4].split("<BR>");
+        for(let event of events) {
             // if(!/color:#000000/.test(event)){
             //     continue;
             // }
@@ -126,19 +118,19 @@ async function fetch(year, month) {
             }
             event = event.replace(/<[^>]+>/g, '');
             if(checkAngerme(event)) {
-                var date = new Date(year, month, day)
-                var regex = /^.*場所：([^・]+)・(.*)$/
-                var place = event.replace(regex, '$1');
-                var hako = event.replace(regex, '$2');
+                const date = new Date(year, month, day)
+                const regex = /^.*場所：([^・]+)・(.*)$/
+                const place = event.replace(regex, '$1');
+                const hako = event.replace(regex, '$2');
                 // var output = year + "/" + month + "/" + day + "," +  + event;
-                var output = `${year}/${month}/${day},${place},${hako},${event}`
+                let output = `${year}/${month}/${day},${place},${hako},${event}`
                 // If Angerme exlusive concert expression is used.
                 // if(/／アンジュルム/.test(event)) {
                 if(/アンジュルム/.test(event)) {
                     output = output + addAngermeSignal(date);
                     console.log(output)
                 } else {
-                    for(member of angermeMemberList) {
+                    for(const member of angermeMemberList) {
                        output = output + addSignal(event, member);
                     }
                     console.log(output)
@@ -151,7 +143,7 @@ async function fetch(year, month) {
 
 async function run() {
     console.log(`DATE,PREFECTURE,PLACE,CONTENT,${angermeMemberList.join(",").toString().replace(/\//g, '')}`);
-    for(year of [
+    for(const year of [
             2025,
             2024,
             2023,
@@ -164,7 +156,7 @@ async function run() {
             2016,
             2015
         ]) {
-        for(month of [12,11,10,9,8,7,6,5,4,3,2,1]) {
+        for(const month of [12,11,10,9,8,7,6,5,4,3,2,1]) {
             await fetch(year, month);
         }
     }
